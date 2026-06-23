@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getActiveAgentId } from "../utils/storage";
 
 export default function PropertyDetail({ property, realtorConfig, onBack, onBook }) {
   const { 
@@ -8,6 +9,9 @@ export default function PropertyDetail({ property, realtorConfig, onBack, onBook
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const activeAgent = getActiveAgentId();
+  const shareUrl = window.location.origin + "/api/share?agent=" + (activeAgent || "") + "&id=" + id;
 
   useEffect(() => {
     // 1. Update document title
@@ -296,7 +300,7 @@ export default function PropertyDetail({ property, realtorConfig, onBack, onBook
               <input 
                 type="text" 
                 readOnly 
-                value={window.location.href} 
+                value={shareUrl} 
                 className="form-input" 
                 style={{ flex: 1, cursor: "default" }}
                 onClick={(e) => e.target.select()}
@@ -305,7 +309,7 @@ export default function PropertyDetail({ property, realtorConfig, onBack, onBook
                 className="btn btn-primary" 
                 style={{ minWidth: "120px" }}
                 onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
+                  navigator.clipboard.writeText(shareUrl);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}

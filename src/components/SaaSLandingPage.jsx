@@ -184,17 +184,17 @@ export default function SaaSLandingPage({ onRegisterSuccess }) {
             
             <div className="form-group">
               <label className="form-label">Subdomain Pilihan Anda *</label>
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="subdomain-input-group">
                 <input 
                   type="text" 
                   className="form-input" 
-                  style={{ flex: 1, textTransform: "lowercase" }}
+                  style={{ textTransform: "lowercase" }}
                   required
                   placeholder="misal: ardyan"
                   value={subdomain}
                   onChange={(e) => setSubdomain(e.target.value.replace(/[^a-zA-Z0-9-]/g, ""))}
                 />
-                <span style={{ padding: "0 12px", border: "1px solid var(--border-color)", borderLeft: "none", height: "42px", display: "flex", alignItems: "center", backgroundColor: "var(--bg-primary)", fontSize: "14px", fontWeight: "600", color: "var(--text-secondary)" }}>
+                <span className="subdomain-suffix">
                   .realtor.web.id
                 </span>
               </div>

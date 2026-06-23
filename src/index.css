@@ -1786,3 +1786,73 @@ a {
   -webkit-box-orient: vertical;
 }
 
+/* Responsive Mobile Fixes */
+@media (max-width: 768px) {
+  .logo-divider,
+  .logo-tagline {
+    display: none !important;
+  }
+  
+  .logo-brand {
+    font-size: 18px !important;
+    letter-spacing: 1.5px !important;
+  }
+  
+  .header-container {
+    padding: 15px 16px !important;
+  }
+  
+  .header-nav {
+    gap: 12px !important;
+  }
+  
+  .nav-link {
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+  }
+}
+
+.subdomain-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.subdomain-input-group input {
+  flex: 1;
+  min-width: 0; /* Allows input to shrink below default browser size in flex rows */
+}
+
+.subdomain-suffix {
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-left: none;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .subdomain-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .subdomain-input-group input {
+    border-radius: 0;
+  }
+  
+  .subdomain-suffix {
+    border-left: 1px solid var(--border-color);
+    border-top: none;
+    justify-content: center;
+    font-size: 12px;
+    height: 36px;
+  }
+}
+
