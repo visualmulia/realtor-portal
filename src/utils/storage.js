@@ -155,8 +155,14 @@ export const getActiveAgentId = () => {
     }
   }
   
-  // Also check generic subdomain structure for other environments (excluding localhost / ip)
-  if (hostname !== "localhost" && hostname !== "127.0.0.1" && parts.length > 2 && parts[0] !== "www") {
+  // Also check generic subdomain structure for other environments (excluding localhost / ip / vercel.app)
+  if (
+    hostname !== "localhost" && 
+    hostname !== "127.0.0.1" && 
+    !hostname.endsWith("vercel.app") &&
+    parts.length > 2 && 
+    parts[0] !== "www"
+  ) {
     return parts[0].toLowerCase();
   }
   
