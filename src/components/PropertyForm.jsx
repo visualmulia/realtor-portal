@@ -9,6 +9,7 @@ export default function PropertyForm({ property, onSave, onClose }) {
     bathrooms: 2,
     description: "",
     image: "",
+    images: ["", "", "", "", ""],
     status: "Available",
     type: "Sale",
     landSize: "",
@@ -21,6 +22,14 @@ export default function PropertyForm({ property, onSave, onClose }) {
 
   useEffect(() => {
     if (property) {
+      let initialImages = property.images ? [...property.images] : [];
+      if (initialImages.length === 0 && property.image) {
+        initialImages = [property.image];
+      }
+      while (initialImages.length < 5) {
+        initialImages.push("");
+      }
+
       setFormData({
         id: property.id,
         title: property.title || "",
@@ -30,6 +39,7 @@ export default function PropertyForm({ property, onSave, onClose }) {
         bathrooms: property.bathrooms || 2,
         description: property.description || "",
         image: property.image || "",
+        images: initialImages,
         status: property.status || "Available",
         type: property.type || "Sale",
         landSize: property.landSize || "",
@@ -39,6 +49,11 @@ export default function PropertyForm({ property, onSave, onClose }) {
         amenitiesInput: property.amenities ? property.amenities.join(", ") : "",
         nearbyInput: property.nearby ? property.nearby.join(", ") : ""
       });
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        images: ["", "", "", "", ""]
+      }));
     }
   }, [property]);
 
@@ -52,12 +67,43 @@ export default function PropertyForm({ property, onSave, onClose }) {
     }));
   };
 
+  const handleImageChange = (index, value) => {
+    setFormData(prev => {
+      const newImages = [...(prev.images || ["", "", "", "", ""])];
+      newImages[index] = value;
+      const firstValidImage = newImages.find(img => img.trim() !== "") || "";
+      return {
+        ...prev,
+        images: newImages,
+        image: firstValidImage
+      };
+    });
+  };
+
+  const handleClearImage = (index) => {
+    handleImageChange(index, "");
+  };
+
+  const handleImageFileChange = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleImageChange(index, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title || !formData.price || !formData.location) {
       alert("Please fill in the required fields (Title, Price, Location).");
       return;
     }
+
+    const cleanImages = (formData.images || []).filter(img => img && img.trim() !== "");
+    const primaryImage = cleanImages[0] || "";
 
     const amenities = formData.amenitiesInput
       ? formData.amenitiesInput.split(",").map(a => a.trim()).filter(Boolean)
@@ -70,24 +116,11 @@ export default function PropertyForm({ property, onSave, onClose }) {
 
     onSave({
       ...cleanData,
+      images: cleanImages,
+      image: primaryImage,
       amenities,
       nearby
     });
-  };
-
-  // Convert uploaded file to base64 if user uploads a local image
-  const handleImageFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          image: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   return (
@@ -194,32 +227,67 @@ export default function PropertyForm({ property, onSave, onClose }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Image Option</label>
-            <div style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
-              <input 
-                type="text" 
-                name="image" 
-                className="form-input" 
-                placeholder="Paste Image URL here..."
-                value={formData.image && !formData.image.startsWith("data:") ? formData.image : ""}
-                onChange={handleChange}
-              />
-              <span style={{ fontSize: "11px", color: "var(--text-muted)", alignSelf: "center" }}>— OR —</span>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageFileChange} 
-                style={{ fontSize: "13px" }}
-              />
+            <label className="form-label" style={{ fontWeight: "600", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", marginBottom: "15px", display: "block" }}>
+              Listing Photos (Maksimal 5 Foto)
+            </label>
+            <div className="form-images-list" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {[0, 1, 2, 3, 4].map((index) => {
+                const imgVal = formData.images ? formData.images[index] : "";
+                const isPrimary = index === 0;
+                return (
+                  <div key={index} className="form-image-slot" style={{ border: "1px solid var(--border-color)", padding: "16px", backgroundColor: "var(--bg-secondary)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px" }}>
+                        Foto {index + 1} {isPrimary && <strong style={{ color: "var(--accent-gold)" }}>(UTAMA)</strong>}
+                      </span>
+                      {imgVal && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleClearImage(index)}
+                          style={{ background: "none", border: "none", color: "var(--error-color)", fontSize: "12px", cursor: "pointer", padding: 0 }}
+                        >
+                          Hapus Foto ×
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: "flex", gap: "15px", alignItems: "flex-start", flexWrap: "wrap" }}>
+                      {/* Image Preview Thumbnail */}
+                      <div style={{ width: "90px", height: "60px", border: "1px solid var(--border-color)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--bg-primary)" }}>
+                        {imgVal ? (
+                          <img src={imgVal} alt={`Slot ${index + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => {
+                            e.target.src = "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=80&q=80";
+                          }} />
+                        ) : (
+                          <span style={{ fontSize: "10px", color: "var(--text-muted)", textAlign: "center", padding: "4px" }}>Kosong</span>
+                        )}
+                      </div>
+
+                      {/* Inputs: URL or Local File Upload */}
+                      <div style={{ flex: 1, minWidth: "200px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <input 
+                          type="text" 
+                          className="form-input" 
+                          style={{ fontSize: "12px", padding: "6px 10px" }}
+                          placeholder={`Paste URL Foto ${index + 1}...`}
+                          value={imgVal && !imgVal.startsWith("data:") ? imgVal : ""}
+                          onChange={(e) => handleImageChange(index, e.target.value)}
+                        />
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <span style={{ fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase" }}>Atau:</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={(e) => handleImageFileChange(index, e)} 
+                            style={{ fontSize: "11px" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            
-            {formData.image ? (
-              <img src={formData.image} alt="Preview" className="form-image-preview" onError={(e) => {
-                e.target.style.display = 'none';
-              }} />
-            ) : (
-              <div className="form-image-placeholder">No Image Selected (Defaults to fallback)</div>
-            )}
           </div>
 
           <div className="form-grid-2">
